@@ -98,7 +98,7 @@ inline void Graph::Add(const int& from, const int& to, const int& d)
 	if (m_now >= m) resize_m();
 
 	*(IJ + m_now) = from;
-	*(IJ + m * 2 - m_now - 1) = to;
+	*(IJ + 2 * m - m_now - 1) = to;
 	*(Len + m_now) = d;
 
 	int v = from;
@@ -159,17 +159,19 @@ void Graph::Print(const std::string& path_g)
 {
 	std::ofstream of;
 	of.open(path_g);
+	of << "digraph G {\n";
 
 	for (ptrdiff_t i(0); i < m_now; ++i) {
 		if (*(N + i) == 0)
 			continue;
 
 		int from = *(IJ + i);
-		int to = *(IJ + 2 * m - i);
+		int to = *(IJ + 2 * m - i - 1);
 		int w = *(Len + i);
 
 		of << from << " -> " << to << " [ label = " << w << " ];\n";
 	}
+	of << "}";
 	of.close();
 }
 

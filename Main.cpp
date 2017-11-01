@@ -26,6 +26,13 @@ int main()
 	G.Add(10, 11, 1);
 	G.Add(1, 5, 4);
 
+	G.Add(20, 21, 1);
+	G.Add(21, 22, 1);
+	G.Remove(12);
+	G.Remove(20, 21);
+
+	//G.Print("Output.dot");
+
 	//std::cout << G.Find_components() << "\n";
 
 	//G.BFS(1, "Output.dot", "Distance.txt");
