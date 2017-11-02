@@ -16,35 +16,35 @@ public:
 	~Graph();
 	Graph(const std::vector<int>& i, const std::vector<int>& j, const std::vector<int>& d);
 
-	void Add(const int& from, const int& to, const int& d); //добавление ребра
+	void Add(const int& from, const int& to, const int& d); //add edge
 
-	void Remove(const int& from, const int& to); //удаление ребра по вершинам
-	void Remove(const int& numb); //удаление ребра по номеру
+	void Remove(const int& from, const int& to); //remove edge by nodes
+	void Remove(const int& numb); //remove edge by its number
 
 	void Print(const std::string& path_g);
 
-	int Find_components() const; //поиск компонент связности без DFS
+	int Find_components() const; //search for connectivity components
 
-	void BFS(const int& v, const std::string& path_g, const std::string& path_d) const; //поиск в ширину с выводом, не учитываем вес рёбер
+	void BFS(const int& v, const std::string& path_g, const std::string& path_d) const; //breadth-first search, не учитываем вес рёбер
 
-	void DFS(const int& v, const std::string& path_g, const std::string& path_d) const; //поиск в глубину с выводом 
+	void DFS(const int& v, const std::string& path_g, const std::string& path_d) const; //Depth-first search
 
-	void Bellman_Ford(const int& v, const std::string& path_g, const std::string& path_d) const; //поиск кратчайших путей алгоритмом Белллмана-Форда
+	void Bellman_Ford(const int& v, const std::string& path_g, const std::string& path_d) const; //compute the shortest paths from a single sourse node to all the other by Bellman-Ford's algorithm
 
-	void Dijksta(const int& v, const std::string& path_g, const std::string& path_d) const; //поиск кратчайших путей алгоритмом Дейкстра
+	void Dijksta(const int& v, const std::string& path_g, const std::string& path_d) const; //compute the shortest paths from a single sourse node to all the other by Dijkstra's algorithm
 protected:
-	void resize_n(); //изменение n
-	void resize_m(); //изменение m
+	void resize_n(); //changing n
+	void resize_m(); //changing m
 private:
-	int* IJ{ nullptr }; //рёбра
-	int* H{ nullptr }; //начало списков
-	int* L{ nullptr }; //ссылки 
-	int* Len{ nullptr }; //вес рёбер
-	int m; //количество рёбер
-	int n; //количество вершин
-	int m_now = 0; //использованные рёбра
-	int n_now = 0; //использованные вершины
-	bool* N{ nullptr }; //нужен для того, чтобы выявить случаи, когда вершины не обязательно строго увеличиваются на единицу
+	int* IJ{ nullptr }; //edges
+	int* H{ nullptr }; //start of lists
+	int* L{ nullptr }; //links
+	int* Len{ nullptr }; //weight of edges
+	int m; //amount of edges
+	int n; //amount of nodes
+	int m_now = 0; //used edges
+	int n_now = 0; //used nodes
+	bool* N{ nullptr }; //if added node is 100 and there are no nodes between n_now and 100 
 };
 
 Graph::Graph() :n(10), m(10) {}
@@ -89,7 +89,7 @@ Graph::Graph(const std::vector<int>& i, const std::vector<int>& j, const std::ve
 inline void Graph::Add(const int& from, const int& to, const int& d) 
 {
 	if (from < 0 || to < 0) {
-		throw std::invalid_argument("Rib is wrong");
+		throw std::invalid_argument("Edge is wrong");
 		return;
 	}
 
@@ -114,15 +114,14 @@ inline void Graph::Add(const int& from, const int& to, const int& d)
 
 void Graph::Remove(const int& from, const int& to) {
 	if ((from < 0 || to < 0) || (from >= n_now || to >= n_now) || m_now == 0 || *(H + from) == -1) {
-		throw std::invalid_argument("Rib is wrong");
+		throw std::invalid_argument("Edge is wrong");
 		return;
 	}
 
 	int v = *(H + from);
 
-	//будем полностью переопределять массивы H и L, сдвигать IJ,
-	//иначе при вызове множества раз Remove, без сдвига и переопределения
-	//будет образовываться ненужное занятое впустую место
+	//needs to shifting array IJ and redefine arrays H and L
+	//otherwise there will be lots of empty memory if its method called 100500(1000) times
 
 	for (ptrdiff_t i(0); i < m; ++i)
 		*(L + i) = -1;
@@ -146,7 +145,7 @@ void Graph::Remove(const int& from, const int& to) {
 
 void Graph::Remove(const int& numb) {
 	if (numb < 0 || numb >= m_now) {
-		throw std::invalid_argument("Rib is wrong");
+		throw std::invalid_argument("Edge is wrong");
 		return;
 	}
 
@@ -202,10 +201,10 @@ int Graph::Find_components() const {
 
 void Graph::BFS(const int& v, const std::string& path_g, const std::string& path_d) const
 {
-	const int inf = 1000 * 1000 * 1000; //бесконечность
+	const int inf = 1000 * 1000 * 1000; //infinity number
 
-	int* d = new int[n_now]; //массив расстояний
-	int* p = new int[n_now]; //восстановление путей
+	int* d = new int[n_now]; //distances
+	int* p = new int[n_now]; //path
 
 	for (ptrdiff_t i(0); i < n_now; ++i) {
 		*(d + i) = inf;
@@ -213,11 +212,11 @@ void Graph::BFS(const int& v, const std::string& path_g, const std::string& path
 	}
 	*(d + v) = 0;
 
-	int* q = new int[n_now]; //очередь
+	int* q = new int[n_now]; //queue
 	*(q) = v;
 
-	int r(0); //начало очереди
-	int w(1); //конец очереди
+	int r(0); //the front of the queue
+	int w(1); //the back of the queue
 
 	while (r < w) {
 		int now = *(q + r);
@@ -246,7 +245,7 @@ void Graph::BFS(const int& v, const std::string& path_g, const std::string& path
 		*(used + i) = 0;
 
 	const std::string fill = " [style = \"filled\", fillcolor = \"lightgrey\"]";
-	for (ptrdiff_t i(0); i < m_now; ++i) //помечаем вершины графа белого и серого цвета: если вершина серого цвета, то BFS зашел в эту вершину
+	for (ptrdiff_t i(0); i < m_now; ++i) //grey node means that its used in BFS
 	{
 		int from = *(IJ + i);
 		int to = *(IJ + 2 * m - i - 1);
@@ -266,7 +265,7 @@ void Graph::BFS(const int& v, const std::string& path_g, const std::string& path
 
 	of << "\n";
 
-	for (ptrdiff_t i(0); i < m_now; ++i) //вывод графа с вершинами белого и серого цвета
+	for (ptrdiff_t i(0); i < m_now; ++i) //output graph
 	{
 		int from = *(IJ + i);
 		int to = *(IJ + 2 * m - i - 1);
@@ -276,7 +275,7 @@ void Graph::BFS(const int& v, const std::string& path_g, const std::string& path
 
 	of << "\n";
 
-	for (ptrdiff_t i(0); i < n_now; ++i) //вывод BFS
+	for (ptrdiff_t i(0); i < n_now; ++i) //output BFS
 	{
 		if (*(p + i) == -1)
 			continue;
@@ -290,7 +289,7 @@ void Graph::BFS(const int& v, const std::string& path_g, const std::string& path
 	std::ofstream od;
 	od.open(path_d);
 
-	od << "Расстояние от вершины " << v << " до его детей:\n";
+	od << "The distance between node " << v << " and their children:\n";
 
 	for (ptrdiff_t i(0); i < n_now; ++i)
 	{
@@ -312,12 +311,12 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 
 	struct node 
 	{
-		int used; //пометки: 0 - не было захода в вершину, 1 - обрабатывается эта вершина алгоритмом, 2 - вершину обработали и больше её не используем
-		int time; //время захода в вершину
-		int rib; //ребро из этой вершины
-		int previous; //предок этой вершины
+		int used; //tags: 0 - node isn't processed in DFS, 1 - node in processing, 2 - DFS processed all node's ancestors
+		int time; //time entering to node
+		int edge; //edges
+		int previous; //ancestors
 		node() {}
-		node(int used, int time, int rib, int previous) :used(used), time(time), rib(rib), previous(previous) {}
+		node(int used, int time, int edge, int previous) :used(used), time(time), edge(edge), previous(previous) {}
 	};
 
 	node* q = new node[n_now];
@@ -326,7 +325,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 	{
 		(*(q + i)).used = 0;
 		(*(q + i)).time = -1;
-		(*(q + i)).rib = *(H + i);
+		(*(q + i)).edge = *(H + i);
 		(*(q + i)).previous = -1;
 	}
 
@@ -335,7 +334,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 
 	while(true)
 	{
-		if (now == v && (*(q + now)).rib == -1)
+		if (now == v && (*(q + now)).edge == -1)
 			break;
 
 		if ((*(q + now)).used == 2) {
@@ -349,15 +348,15 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 			++time;
 		}
 
-		if ((*(q + now)).rib == -1) {
+		if ((*(q + now)).edge == -1) {
 			(*(q + now)).used = 2;
 			now = (*(q + now)).previous;
 			continue;
 		}
 		
-		int rib_now = (*(q + now)).rib;
-		int to = *(IJ + 2 * m - rib_now - 1);
-		(*(q + now)).rib = *(L + rib_now);
+		int edge_now = (*(q + now)).edge;
+		int to = *(IJ + 2 * m - edge_now - 1);
+		(*(q + now)).edge = *(L + edge_now);
 		(*(q + to)).previous = now;
 		now = to;
 	}
@@ -371,7 +370,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 
 	const std::string fill = " [style = \"filled\", fillcolor = \"lightgrey\"]";
 
-	for (ptrdiff_t i(0); i < m_now; ++i) //помечаем вершины графа белого и серого цвета: если вершина серого цвета, то DFS зашел в эту вершину
+	for (ptrdiff_t i(0); i < m_now; ++i) //grey node means that its used in BFS
 	{
 		int from = *(IJ + i);
 		int to = *(IJ + 2 * m - i - 1);
@@ -389,7 +388,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 
 	of << "\n";
 
-	for (ptrdiff_t i(0); i < m_now; ++i) //вывод графа с вершинами белого и серого цвета
+	for (ptrdiff_t i(0); i < m_now; ++i) //output graph
 	{
 		int from = *(IJ + i);
 		int to = *(IJ + 2 * m - i - 1);
@@ -404,7 +403,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 	od.open(path_d);
 	od << "Вершина - Время захода\n";
 
-	for (ptrdiff_t i(0); i < n_now; ++i) //вывод DFS
+	for (ptrdiff_t i(0); i < n_now; ++i) //DFS
 	{
 		if ((*(q + i)).used == 0)
 			continue;
@@ -421,10 +420,10 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 		return;
 	}
 
-	const int inf = 1000 * 1000 * 1000; //бесконечность
+	const int inf = 1000 * 1000 * 1000; //infinity
 
-	int* d = new int[n_now]; //массив расстояний
-	int* p = new int[n_now]; //восстановление путей
+	int* d = new int[n_now]; //distances
+	int* p = new int[n_now]; //path
 
 	for (ptrdiff_t i(0); i < n_now; ++i) {
 		*(d + i) = inf;
@@ -433,7 +432,7 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 
 	*(d + v) = 0;
 
-	int check_for_negative_cycle; //проверим на отрицательный цикл
+	int check_for_negative_cycle(-1); 
 
 	for (ptrdiff_t i(0); i < n_now; ++i)
 	{
@@ -445,16 +444,16 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 			int to = *(IJ + 2 * m - j - 1);
 			int w = *(Len + j);
 
-			if (*(d + from) < inf && *(d + to) > *(d + from) + w) // проверка *(d + from) < inf из-за отрицательных весов
+			if (*(d + from) < inf && *(d + to) > *(d + from) + w) // checking *(d + from) < inf due to negative edge's weight
 			{
-				*(d + to) = std::max(-inf, *(d + from) + w); //чтобы расстояния не ушли далеко в минус
+				*(d + to) = std::max(-inf, *(d + from) + w); //if negatives edges' weights are tremendous
 				*(p + to) = from;
 				check_for_negative_cycle = to;
 			}
 		}
 	}
 
-	if (check_for_negative_cycle != -1) //если найден отрицательный цикл 
+	if (check_for_negative_cycle != -1) //if negative cycle is found
 	{
 		int x = check_for_negative_cycle;
 		for (ptrdiff_t i(0); i < n_now; ++i)
@@ -484,14 +483,14 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 
 		return;
 	}
-	else //если отрицательного цикла нет
+	else //if not
 	{
 		delete[] d;
 		delete[] p;
 
-		int* d = new int[n_now]; //массив расстояний
-		int* p = new int[n_now]; //восстановение путей
-		int* q = new int[n_now]; //очередь
+		int* d = new int[n_now]; //distances
+		int* p = new int[n_now]; //path
+		int* q = new int[n_now]; //queue
 
 		for (ptrdiff_t i(0); i < n_now; ++i) {
 			*(d + i) = inf;
@@ -502,8 +501,8 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 		*(d + v) = 0;
 		*(q + v) = -1;
 
-		int q_beg(v); //начало очереди
-		int q_end(v); //конец очереди
+		int q_beg(v); //the front of the queue
+		int q_end(v); //the back of the queue
 
 		while (q_beg != -1) {
 			int i = q_beg;
@@ -548,17 +547,17 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 		of.open(path_g);
 		of << "digraph G {\n";
 
-		for (ptrdiff_t i(0); i < n_now; ++i) //вывод графа
+		for (ptrdiff_t i(0); i < n_now; ++i) //output graph
 		{
 			if (*(p + i) == -1) {
 				continue;
 			}
 
-			int rib = *(p + i);
+			int edge = *(p + i);
 
-			int from = *(IJ + rib);
-			int to = *(IJ + 2 * m - rib - 1);
-			int w = *(Len + rib);
+			int from = *(IJ + edge);
+			int to = *(IJ + 2 * m - edge - 1);
+			int w = *(Len + edge);
 			
 			of << from << " -> " << to << " [ label = " << w << " ];\n";
 		}
@@ -569,7 +568,7 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 		std::ofstream od;
 		od.open(path_d);
 
-		for (ptrdiff_t i(0); i < n_now; ++i) //вывод расстояний от вершин до заданной
+		for (ptrdiff_t i(0); i < n_now; ++i) //output distances
 		{
 			if (*(d + i) == inf || i == v) continue;
 
@@ -581,17 +580,17 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 
 void Graph::Dijksta(const int & v, const std::string& path_g, const std::string& path_d) const
 {
-	int inf = 1000 * 1000 * 1000; //бесконечность
+	int inf = 1000 * 1000 * 1000; //infinity
 
-	int C = -inf; //максимальный вес дуги
+	int C = -inf; //maximum edge weight
 	for (ptrdiff_t i(0); i < m_now; ++i)
 		C = std::max(C, *(Len + i));
 
-	int* d = new int[n_now]; //расстояния
-	int* p = new int[n_now]; //восстановление путей
-	int* bucket = new int[n_now * C]; //черпаки
-	int* bucket_forward = new int[n_now]; //ссылки вперёд
-	int* bucket_backward = new int[n_now]; //ссылки назад
+	int* d = new int[n_now]; //distances
+	int* p = new int[n_now]; //pathes
+	int* bucket = new int[n_now * C]; //buckets
+	int* bucket_forward = new int[n_now]; //forward links
+	int* bucket_backward = new int[n_now]; //backward links
 
 	for (ptrdiff_t i(0); i < n_now; ++i) {
 		*(d + i) = inf;
@@ -604,7 +603,7 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 
 	*(d + v) = 0;
 
-	auto get = [&](int& b) //удаление первого элемента из списка
+	auto get = [&](int& b) //removing the first element from the bucket
 	{
 		int i = *(bucket + b);
 		if (i != -1)
@@ -612,7 +611,7 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 		return i;
 	};
 
-	auto insert = [&](int& node, int& b) //добавление элемента в список
+	auto insert = [&](int& node, int& b) //adding element to the bucket
 	{
 		int i = *(bucket + b);
 		*(bucket_forward + node) = i;
@@ -621,7 +620,7 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 		*(bucket + b) = node;
 	};
 
-	auto remove = [&](int& node, int& b) //удаление элемента из списка
+	auto remove = [&](int& node, int& b) //removing the element from the bucket
 	{
 		int f_node = *(bucket_forward + node);
 		int b_node = *(bucket_backward + node);
@@ -638,7 +637,7 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 	int node(v), b(0);
 	insert(node,b);
 
-	for (; b < n_now * C; ++b) //просмотр черпаков
+	for (; b < n_now * C; ++b) //scan buckets
 	{
 		int i;
 		while ( (i = get(b)) != -1)
@@ -667,14 +666,14 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 	of.open(path_g);
 	of << "digraph G {\n";
 
-	for (ptrdiff_t i(0); i < n_now; ++i) //вывод графа
+	for (ptrdiff_t i(0); i < n_now; ++i) //output graph
 	{
 		if ( *(p + i) == -1) continue;
 
-		int rib = *(p + i);
-		int from = *(IJ + rib);
-		int to = *(IJ + 2 * m - rib - 1);
-		int w = *(Len + rib);
+		int edge = *(p + i);
+		int from = *(IJ + edge);
+		int to = *(IJ + 2 * m - edge - 1);
+		int w = *(Len + edge);
 
 		of << from << " -> " << to << " [ label = " << w << " ];\n";
 	}
@@ -685,7 +684,7 @@ void Graph::Dijksta(const int & v, const std::string& path_g, const std::string&
 	std::ofstream od;
 	od.open(path_d);
 
-	for (ptrdiff_t i(0); i < n_now; ++i) //вывод расстояний от вершин до заданной
+	for (ptrdiff_t i(0); i < n_now; ++i) //output distances
 	{
 		if (*(d + i) == inf || i == v) continue;
 
