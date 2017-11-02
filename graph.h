@@ -401,7 +401,7 @@ void Graph::DFS(const int& v, const std::string& path_g, const std::string& path
 
 	std::ofstream od;
 	od.open(path_d);
-	od << "Вершина - Время захода\n";
+	od << "Node - entering time to\n";
 
 	for (ptrdiff_t i(0); i < n_now; ++i) //DFS
 	{
@@ -432,7 +432,7 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 
 	*(d + v) = 0;
 
-	int check_for_negative_cycle(-1); 
+	int check_for_negative_cycle(-1);
 
 	for (ptrdiff_t i(0); i < n_now; ++i)
 	{
@@ -483,99 +483,99 @@ void Graph::Bellman_Ford(const int& v, const std::string& path_g, const std::str
 
 		return;
 	}
-	else //if not
-	{
-		delete[] d;
-		delete[] p;
 
-		int* d = new int[n_now]; //distances
-		int* p = new int[n_now]; //path
-		int* q = new int[n_now]; //queue
 
-		for (ptrdiff_t i(0); i < n_now; ++i) {
-			*(d + i) = inf;
-			*(q + i) = -2;
-			*(p + i) = -1;
-		}
+	//if not
+	delete[] d;
+	delete[] p;
 
-		*(d + v) = 0;
-		*(q + v) = -1;
+	int* d = new int[n_now]; //distances
+	int* p = new int[n_now]; //path
+	int* q = new int[n_now]; //queue
 
-		int q_beg(v); //the front of the queue
-		int q_end(v); //the back of the queue
-
-		while (q_beg != -1) {
-			int i = q_beg;
-			q_beg = *(q + q_beg);
-			*(q + i) = -2;
-
-			for (int k = *(H + i); k != -1; k = *(L + k)) 
-			{
-				int from = i;
-				int to = *(IJ + 2 * m - k - 1);
-				int w = *(Len + k);
-
-				if (*(d + from) <inf && *(d + from) + w < *(d + to))
-				{
-					if (*(q + to) == -2)
-					{
-						if (*(d + to) == inf)
-						{
-							if (q_beg != -1)
-								*(q + q_end) = to;
-							else
-								q_beg = to;
-
-							q_end = to;
-							*(q + to) = -1;
-						}
-						else
-						{
-							*(q + to) = q_beg;
-							if (q_beg == -1) q_end = to;
-							q_beg = to;
-						}
-					}
-
-					*(d + to) = *(d + from) + w;
-					*(p + to) = k;
-				}
-			}
-		}
-
-		std::ofstream of;
-		of.open(path_g);
-		of << "digraph G {\n";
-
-		for (ptrdiff_t i(0); i < n_now; ++i) //output graph
-		{
-			if (*(p + i) == -1) {
-				continue;
-			}
-
-			int edge = *(p + i);
-
-			int from = *(IJ + edge);
-			int to = *(IJ + 2 * m - edge - 1);
-			int w = *(Len + edge);
-			
-			of << from << " -> " << to << " [ label = " << w << " ];\n";
-		}
-		
-		of << "}";
-		of.close();
-
-		std::ofstream od;
-		od.open(path_d);
-
-		for (ptrdiff_t i(0); i < n_now; ++i) //output distances
-		{
-			if (*(d + i) == inf || i == v) continue;
-
-			od << v << " to " << i << " = " << *(d + i) << "\n";
-		}
-		od.close();
+	for (ptrdiff_t i(0); i < n_now; ++i) {
+		*(d + i) = inf;
+		*(q + i) = -2;
+		*(p + i) = -1;
 	}
+
+	*(d + v) = 0;
+	*(q + v) = -1;
+
+	int q_beg(v); //the front of the queue
+	int q_end(v); //the back of the queue
+
+	while (q_beg != -1) {
+		int i = q_beg;
+		q_beg = *(q + q_beg);
+		*(q + i) = -2;
+
+		for (int k = *(H + i); k != -1; k = *(L + k))
+		{
+			int from = i;
+			int to = *(IJ + 2 * m - k - 1);
+			int w = *(Len + k);
+
+			if (*(d + from) < inf && *(d + from) + w < *(d + to))
+			{
+				if (*(q + to) == -2)
+				{
+					if (*(d + to) == inf)
+					{
+						if (q_beg != -1)
+							*(q + q_end) = to;
+						else
+							q_beg = to;
+
+						q_end = to;
+						*(q + to) = -1;
+					}
+					else
+					{
+						*(q + to) = q_beg;
+						if (q_beg == -1) q_end = to;
+						q_beg = to;
+					}
+				}
+
+				*(d + to) = *(d + from) + w;
+				*(p + to) = k;
+			}
+		}
+	}
+
+	std::ofstream of;
+	of.open(path_g);
+	of << "digraph G {\n";
+
+	for (ptrdiff_t i(0); i < n_now; ++i) //output graph
+	{
+		if (*(p + i) == -1) {
+			continue;
+		}
+
+		int edge = *(p + i);
+
+		int from = *(IJ + edge);
+		int to = *(IJ + 2 * m - edge - 1);
+		int w = *(Len + edge);
+
+		of << from << " -> " << to << " [ label = " << w << " ];\n";
+	}
+
+	of << "}";
+	of.close();
+
+	std::ofstream od;
+	od.open(path_d);
+
+	for (ptrdiff_t i(0); i < n_now; ++i) //output distances
+	{
+		if (*(d + i) == inf || i == v) continue;
+
+		od << v << " to " << i << " = " << *(d + i) << "\n";
+	}
+	od.close();
 }
 
 void Graph::Dijksta(const int & v, const std::string& path_g, const std::string& path_d) const
